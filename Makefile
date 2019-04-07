@@ -10,7 +10,10 @@ SHELL := /bin/bash
 VERSION := 1.0.0
 BUILD := `git rev-parse HEAD`
 
-all: auth build create_gke config_kubernetes deploy
+all: get_gcloud_sdk auth build create_gke config_kubernetes deploy
+
+get_gcloud_sdk:
+	wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz && tar -xvf google-cloud-sdk-241.0.0-linux-x86_64.tar.gz -C tools/
 
 auth:
 	gcloud auth activate-service-account --key-file $(GCP_KEY_FILE)

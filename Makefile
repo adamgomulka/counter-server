@@ -1,31 +1,34 @@
 GCP_PROJECT_ID := nyt-adam-gomulka-interview
-GCP_COMPUTE_ZONE := us-east4-a
+GCP_COMPUTE_REGION := us-east4
 GCP_KEY_FILE := nyt-adam-gomulka-interview-6b516e0cfe83.json
-GKE_CLUSTER_NAME := nyt-server
+GKE_CLUSTER_NAME := nyt-interview-server
+PATH := $(PATH):$(PWD)/tools:$(PWD)/tools/google-cloud-sdk/bin
+KUBECONFIG := $(PWD)/.kube/config
 
 SHELL := /bin/bash
 
 VERSION := 1.0.0
 BUILD := `git rev-parse HEAD`
 
-all: create deploy
+all: auth build create deploy
 
 auth:
 	gcloud auth activate-service-account --key-file $(GCP_KEY_FILE)
 	gcloud auth configure-docker
 
 build:
-	docker build -t gcr.io/$(GCP_PROJECT_ID)/nyt-server:$(VERSION) -t gcr.io/$(GCP_PROJECT_ID)/nyt-server:$(BUILD) .
-	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-server:$(VERSION)
-	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-server:$(BUILD)
+	docker build -t gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(VERSION) -t gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(BUILD) .
+	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(VERSION)
+	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(BUILD)
 
-create: 
-	gcloud auth activate-service-account --key-file $(GCP_KEY_FILE)
-	gcloud config set project $(GCP_PROJECT_ID)
-	gcloud config set compute/zone $(GCP_COMPUTE_ZONE)
-	gcloud components update
-	gcloud container clusters create $(GKE_CLUSER_NAME)
+create:
+	terraform init tf/
+	terraform apply -auto-approve tf/ 
+	gcloud container clusters get-credentials $(GKE_CLUSTER_NAME) --region $(GCP_COMPUTE_REGION)
+	kubectl --namespace kube-system create sa tiller
+	kubectl create clusterrolebinding --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+	helm init --service-account tiller
 
 deploy:
-	kubectl run nyt-server --image=gcr.io/$(GCP_PROJECT_ID)/nyt-server:$(VERSION) --port 8080
-	kubectl expose deployment nyt-server --type=LoadBalancer --port 80 --target-port 8080
+	helm init --kubeconfig $(KUBECONFIG) --client-only
+	helm install --name nyt-interview-server --namespace nyt-interview-server chart/nyt-interview-server

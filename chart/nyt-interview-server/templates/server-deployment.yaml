@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nyt-interview-server
+  labels:
+    app: nyt-interview-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nyt-interview-server
+  template:
+    metadata:
+      labels:
+        app: nyt-interview-server
+    spec:
+      containers:
+      - name: nyt-interview-server
+        image: gcr.io/nyt-adam-gomulka-interview/nyt-interview-server:1.0.0
+        ports:
+        - containerPort: 8080

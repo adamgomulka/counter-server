@@ -13,6 +13,7 @@ BUILD := `git rev-parse HEAD`
 .DEFAULT_GOAL := all
 
 all: get_utils auth build create config_kubernetes deploy
+all_nodl: auth build create config_kubernetes deploy
 
 get_utils:
 	wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz && tar -xvf google-cloud-sdk-241.0.0-linux-x86_64.tar.gz -C tools/ && rm google-cloud-sdk-241.0.0-linux-x86_64.tar.gz
@@ -41,3 +42,8 @@ config_kubernetes:
 
 deploy:
 	helm install --name nyt-interview-server --namespace nyt-interview-server chart/nyt-interview-server
+
+clean:
+	rm -rf tools/*
+	rm terraform.*
+	rm .kubeconfig

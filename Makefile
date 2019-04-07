@@ -10,11 +10,13 @@ SHELL := /bin/bash
 VERSION := 1.0.0
 BUILD := `git rev-parse HEAD`
 
-all: get_gcloud_sdk auth build create_gke config_kubernetes deploy
+all: get_utils auth build create_gke config_kubernetes deploy
 
-get_gcloud_sdk:
+get_utils:
 	wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz && tar -xvf google-cloud-sdk-241.0.0-linux-x86_64.tar.gz -C tools/
-
+	wget https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip && unzip terraform_0.11.13_linux_amd64.zip -d tools/
+	wget -O tools/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl && chmod +x tools/kubectl
+	wget https://storage.googleapis.com/kubernetes-helm/helm-v2.13.1-linux-amd64.tar.gz && tar -xvf helm-v2.13.1-linux-amd64-.tar.gz linux-amd64/helm linux-amd64/tiller -C tools/
 auth:
 	gcloud auth activate-service-account --key-file $(GCP_KEY_FILE)
 	gcloud auth configure-docker

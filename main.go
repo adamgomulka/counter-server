@@ -48,16 +48,12 @@ func (c *CounterHandler) ResetCounter() {
     c.counts = make(map[string]int)
 }
 
-func HealthCheck() {
-    var health map[string]int
-
-}
-
 func main() {
     server := http.NewServeMux()
     counter := &CounterHandler{counts: map[string]int{}}
     server.Handle("/hello/", counter)
     server.Handle("/counts", counter)
+    server.HandleFunc("/health", HealthCheck)
     log.Fatal(http.ListenAndServe(":8080", server))
 }
 

@@ -10,7 +10,9 @@ SHELL := /bin/bash
 VERSION := 1.0.0
 BUILD := `git rev-parse HEAD`
 
-all: get_utils auth build create_gke config_kubernetes deploy
+.DEFAULT_GOAL := all
+
+all: get_utils auth build create config_kubernetes deploy
 
 get_utils:
 	wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz && tar -xvf google-cloud-sdk-241.0.0-linux-x86_64.tar.gz -C tools/ && rm google-cloud-sdk-241.0.0-linux-x86_64.tar.gz
@@ -26,7 +28,7 @@ build:
 	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(VERSION)
 	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(BUILD)
 
-create_gke:
+create:
 	terraform init tf/
 	terraform apply -auto-approve tf/ 
 

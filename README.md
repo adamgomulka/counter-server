@@ -13,7 +13,7 @@ To build this project on Linux, simply navigate into the projects root directory
 - 'make get_cloud_sdk': Downloads the Google Cloud SDK to your local machine, and unpacks it in the projects tools/ directory.
 - 'make auth': Configures Google Cloud authentication for your local machine
 - 'make build': Builds the Docker image defined in the project's Dockerfile and pushes it to GCR.
-- 'make create_gke': creates the GKE cluster using Terraform.
+- 'make create': creates the GKE cluster using Terraform.
 - 'make config_kubernetes': Configures an existing Kubernetes cluster to allow deployment of Helm charts.
 - 'make deploy': Deploys the Helm chart onto the Kubernetes cluster.
 

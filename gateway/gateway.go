@@ -1,4 +1,4 @@
-package gateway
+package main
 
 import (
     "fmt"
@@ -49,14 +49,15 @@ func (h HttpRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func CreateRPCClients(services map[string][]string) (h map[string]HttpRequestHandler, e []error) {
     var err error
+    h = make(map[string]HttpRequestHandler)
     for s, _ := range services {
         rpc_client := &RpcClient{ServerName: s}
         err = rpc_client.Init()
         if err != nil {
             e = append(e, err)
+        }
         handler := &HttpRequestHandler{rpc_client: *rpc_client}
         h[s] = *handler
-        }
     }
     return
 }
@@ -74,7 +75,7 @@ func main() {
     http_server := http.NewServeMux()
     handlers, e := CreateRPCClients(services)
     if len(e) == 0 {
-        DefineRoutes(services, handlers, http_server)
+        DefineRoutes(services, handlers, *http_server)
     }
-    log.Fatal(http.ListenAndServe(":80", http_server))
+    log.Fatal(http.ListenAndServe(":8080", http_server))
 }

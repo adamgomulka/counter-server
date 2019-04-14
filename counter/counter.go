@@ -1,43 +1,62 @@
-package counter
+package main
 
 import (
     . "../core"
     "strings"
     "fmt"
     "encoding/json"
+    "net/rpc"
+    "net"
+    "strconv"
 )
 
 const service string = "counter"
 
 type CounterHandler struct {
-    RpcRequestHandler
     counts map[string]int
+}
+
+type RpcServer struct {
+    ServerName string
+    listener net.Listener
+    server rpc.Server
+}
+
+func (s *RpcServer) Init(c *CounterHandler) {
+    s.server = rpc.Server{}
+    s.server.Register(c)
+    s.listener, _ = net.Listen("tcp", ":" + strconv.Itoa(1377))
+    s.server.Accept(s.listener)
+}
+
+func (s *RpcServer) Close() {
+    s.listener.Close()
 }
 
 func (c *CounterHandler) Execute(r RpcRequest, w *RpcResponse) (e error) {
     if strings.HasPrefix(r.Name[1:], "hello") {
         if r.Method == "DELETE" {
-            *w = c.ResetCounter()
+            *w = c.resetCounter()
         } else if r.Method == "GET" {
             n := r.Name[len("/hello/:"):]
-            *w = c.ServeHello(n)
+            *w = c.serveHello(n)
         } else {
             *w = RpcResponse{StatusCode: 400}
         }
     } else if strings.HasPrefix(r.Name[1:], "counts") {
         if r.Method == "GET" {
-            *w = c.GetCounter()
+            *w = c.getCounter()
         }
     }
     return nil
 }
 
-func (c *CounterHandler) ResetCounter() RpcResponse {
+func (c *CounterHandler) resetCounter() RpcResponse {
     c.counts = make(map[string]int)
     return RpcResponse{Message: "", StatusCode: 200}
 }
 
-func (c *CounterHandler) ServeHello(n string) RpcResponse {
+func (c *CounterHandler) serveHello(n string) RpcResponse {
     if _, p := c.counts[n]; p {
         c.counts[n]++
     } else {
@@ -46,13 +65,13 @@ func (c *CounterHandler) ServeHello(n string) RpcResponse {
     return RpcResponse{Message: fmt.Sprintf("Hello, %s!", n), StatusCode: 200}
 }
 
-func (c *CounterHandler) GetCounter() RpcResponse {
+func (c *CounterHandler) getCounter() RpcResponse {
     j, _ := json.Marshal(c.counts)
     return RpcResponse{Message: string(j), StatusCode: 200}
 }
 
 func main() {
-    counts := CounterHandler{counts: map[string]int{}}
+    counts := &CounterHandler{counts: map[string]int{}}
     server := RpcServer{ServerName: service}
     server.Init(counts)
     defer server.Close()

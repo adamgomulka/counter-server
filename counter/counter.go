@@ -25,10 +25,14 @@ type RpcServer struct {
 
 func (s *RpcServer) Init(c *CounterHandler) {
     var e error
+    fmt.Printf("Init starting%s", "\n")
     s.server = &rpc.Server{}
+    if s.server != nil {
+        fmt.Printf("rpc server added to handler%s", "\n")
+    }
     e = s.server.Register(c)
     if e != nil {
-        log.Print(e)
+        fmt.Print("e")
     }
     s.listener, e = net.Listen("tcp", ":" + strconv.Itoa(1377))
     if e != nil {
@@ -81,7 +85,13 @@ func (c *CounterHandler) getCounter() RpcResponse {
 
 func main() {
     counts := &CounterHandler{counts: map[string]int{}}
+    if counts != nil {
+        fmt.Printf("counts initialized%s", "\n")
+    }
     server := RpcServer{ServerName: service}
+    if server.ServerName == "counter" {
+        fmt.Printf("server created")
+    }
     server.Init(counts)
     defer server.Close()
 }

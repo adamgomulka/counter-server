@@ -22,7 +22,8 @@ type HttpRequestHandler struct {
 }
 
 func (c *RpcClient) Init() (e error) {
-    addr := c.ServerName + ":" + strconv.Itoa(rpc_port)
+    //addr := c.ServerName + ":" + strconv.Itoa(rpc_port)
+    addr := "127.0.0.1:" + strconv.Itoa(rpc_port)
     c.client, e = rpc.Dial("tcp", addr)
     return
 }
@@ -36,10 +37,13 @@ func (c *RpcClient) Close() (e error) {
 }
 
 func (h HttpRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    rpc_request := &RpcRequest{Name: r.URL.Path, Method: r.Method}
-    rpc_response := RpcResponse{}
+    rpc_request := RpcRequest{Name: r.URL.Path, Method: r.Method}
+    rpc_response := &RpcResponse{}
     handler_name := h.rpc_client.ServerName + ".Execute"
-    h.rpc_client.client.Call(handler_name, rpc_request, rpc_response)
+    e := h.rpc_client.client.Call(handler_name, rpc_request, rpc_response)
+    if e != nil {
+        log.Print(e)
+    }
     if rpc_response.StatusCode == 200 {
         fmt.Fprintf(w, rpc_response.Message)
     } else {
@@ -54,7 +58,7 @@ func CreateRPCClients(services map[string][]string) (h map[string]HttpRequestHan
         rpc_client := &RpcClient{ServerName: s}
         err = rpc_client.Init()
         if err != nil {
-            e = append(e, err)
+            log.Print(err)
         }
         handler := &HttpRequestHandler{rpc_client: *rpc_client}
         h[s] = *handler
@@ -71,11 +75,8 @@ func DefineRoutes(services map[string][]string, handlers map[string]HttpRequestH
 }
 
 func main() {
-    var handlers map[string]HttpRequestHandler
     http_server := http.NewServeMux()
-    handlers, e := CreateRPCClients(services)
-    if len(e) == 0 {
-        DefineRoutes(services, handlers, http_server)
-    }
+    handlers, _ := CreateRPCClients(services)
+    DefineRoutes(services, handlers, http_server)
     log.Fatal(http.ListenAndServe(":8080", http_server))
 }

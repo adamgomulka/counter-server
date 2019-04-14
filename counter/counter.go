@@ -8,6 +8,7 @@ import (
     "net/rpc"
     "net"
     "strconv"
+    "log"
 )
 
 const service string = "counter"
@@ -19,14 +20,22 @@ type CounterHandler struct {
 type RpcServer struct {
     ServerName string
     listener net.Listener
-    server rpc.Server
+    server *rpc.Server
 }
 
 func (s *RpcServer) Init(c *CounterHandler) {
-    s.server = rpc.Server{}
-    s.server.Register(c)
-    s.listener, _ = net.Listen("tcp", ":" + strconv.Itoa(1377))
+    var e error
+    s.server = &rpc.Server{}
+    e = s.server.Register(c)
+    if e != nil {
+        log.Print(e)
+    }
+    s.listener, e = net.Listen("tcp", ":" + strconv.Itoa(1377))
+    if e != nil {
+        log.Print(e)
+    }
     s.server.Accept(s.listener)
+    fmt.Print("init completed")
 }
 
 func (s *RpcServer) Close() {

@@ -75,7 +75,7 @@ func main() {
     http_server := http.NewServeMux()
     handlers, e := CreateRPCClients(services)
     if len(e) == 0 {
-        DefineRoutes(services, handlers, *http_server)
+        DefineRoutes(services, handlers, http_server)
     }
     log.Fatal(http.ListenAndServe(":8080", http_server))
 }

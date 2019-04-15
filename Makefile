@@ -25,9 +25,9 @@ auth:
 	gcloud auth configure-docker
 
 build:
-	docker build -t gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(VERSION) -t gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(BUILD) .
-	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(VERSION)
-	docker push gcr.io/$(GCP_PROJECT_ID)/nyt-interview-server:$(BUILD)
+	docker build -t gcr.io/$(GCP_PROJECT_ID)/counter-server:$(VERSION) -t gcr.io/$(GCP_PROJECT_ID)/counter-server:$(BUILD) .
+	docker push gcr.io/$(GCP_PROJECT_ID)/counter-server:$(VERSION)
+	docker push gcr.io/$(GCP_PROJECT_ID)/counter-server:$(BUILD)
 
 create:
 	terraform init tf/
@@ -41,7 +41,7 @@ config_kubernetes:
 	sleep 30
 
 deploy:
-	helm install --name nyt-interview-server --namespace nyt-interview-server chart/nyt-interview-server
+	helm install --name nyt-interview-server --namespace nyt-interview-server chart/counter-server
 
 clean:
 	rm -rf tools/*

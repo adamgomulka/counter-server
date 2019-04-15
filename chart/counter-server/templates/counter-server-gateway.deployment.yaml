@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-server-gateway
+  labels:
+    app: counter-server-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: counter-server-gateway
+  template:
+    metadata:
+      labels:
+        app: counter-server-gateway
+    spec:
+      containers:
+      - name: counter-server-gateway
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.1.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: "ROLE"
+          value: "gateway"

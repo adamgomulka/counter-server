@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: counter-server-rpcserv
+spec:
+  selector:
+    app: counter-server-rpcserv
+  ports:
+  - protocol: TCP
+    port: 1377
+    targetPort: 1377
+  type: ClusterIP

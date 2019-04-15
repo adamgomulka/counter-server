@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-server-rpcserv
+  labels:
+    app: counter-server-rpcserv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: counter-server-rpcserv
+  template:
+    metadata:
+      labels:
+        app: counter-server-rpcserv
+    spec:
+      containers:
+      - name: counter-server-rpcserv
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.1.0
+        ports:
+        - containerPort: 1377
+        env:
+        - name: "ROLE"
+          value: "rpcserv"

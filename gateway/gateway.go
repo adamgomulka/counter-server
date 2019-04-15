@@ -6,10 +6,10 @@ import (
     "net/http"
     "net/rpc"
     "strconv"
-    . "../core"
+    . "counter-server/core"
 )
 
-var services = map[string][]string{"CounterHandler": []string{"/hello/", "/counter"}, "health": []string{"/health"}}
+var services = map[string][]string{"CounterHandler": []string{"/hello/", "/counts"}, "health": []string{"/health"}}
 var rpc_port = 1377
 
 type RequestHandler struct {
@@ -18,9 +18,8 @@ type RequestHandler struct {
 }
 
 func (h *RequestHandler) init() (e error) {
-    //addr := c.ServerName + ":" + strconv.Itoa(rpc_port)
+    addr := h.ServerName + ":" + strconv.Itoa(rpc_port)
     fmt.Printf("Initializing request handler%s", "\n")
-    addr := "127.0.0.1:" + strconv.Itoa(rpc_port)
     h.client, e = rpc.Dial("tcp", addr)
     fmt.Printf("Request handler initialized: %s%s", h.ServerName, "\n")
     if e != nil {
@@ -47,17 +46,11 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     rpc_response := new(RpcResponse)
     handler_name := h.ServerName + ".Execute"
     h.client.Call(handler_name, rpc_request, rpc_response)
-    /* if e != nil {
-        fmt.Printf("Error handling request in ServeHTTP->Call%s", "\n")
-        log.Print(e)
-    }
     if rpc_response.StatusCode == 200 {
         fmt.Fprintf(w, rpc_response.Message)
     } else {
         http.Error(w, http.StatusText(rpc_response.StatusCode), rpc_response.StatusCode)
-    }*/
-    fmt.Printf("Status Code: %s%s", strconv.Itoa(rpc_response.StatusCode), "\n")
-    fmt.Printf("Message: %s%s", rpc_response.Message, "\n")
+    }
 }
 
 func createRPCClients(services map[string][]string) (h map[string]*RequestHandler) {

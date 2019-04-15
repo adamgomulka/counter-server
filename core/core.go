@@ -28,22 +28,17 @@ func CreateCounterHandler() (h *CounterHandler) {
 
 func (c *CounterHandler) Execute(r RpcRequest, w *RpcResponse) (e error) {
     if strings.HasPrefix(r.Name[1:], "hello") {
-        if r.Method == "DELETE" {
-            fmt.Printf("Method DELETE%sRunning resetCounter()%s", "\n", "\n")
-            *w = c.resetCounter()
-            fmt.Printf("Finished running resetCounter()%s", "\n")
-        } else if r.Method == "GET" {
-            fmt.Printf("Method GET%s", "\n")
+        if r.Method == "GET" {
             n := r.Name[len("/hello/:"):]
-            fmt.Printf("Running serveHello(%s)%s", n, "\n")
             *w = c.serveHello(n)
-            fmt.Printf("Finished running serveHello()%s", "\n")
         } else {
             *w = RpcResponse{StatusCode: 400}
         }
     } else if strings.HasPrefix(r.Name[1:], "counts") {
         if r.Method == "GET" {
             *w = c.getCounter()
+        } else if r.Method == "DELETE" {
+            *w = c.resetCounter()
         }
     }
     return nil

@@ -6,10 +6,10 @@ import (
     "net/http"
     "net/rpc"
     "strconv"
-    . "counter-server/core"
+    . "../core"
 )
 
-var services = map[string][]string{"CounterHandler": []string{"/hello/", "/counts"}, "health": []string{"/health"}}
+var services = map[string][]string{"counter": []string{"/hello/", "/counts", "/health"}}
 var rpc_port = 1377
 
 type RequestHandler struct {
@@ -47,7 +47,7 @@ func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     handler_name := h.ServerName + ".Execute"
     h.client.Call(handler_name, rpc_request, rpc_response)
     if rpc_response.StatusCode == 200 {
-        fmt.Fprintf(w, rpc_response.Message)
+        w.Write(rpc_response.Message)
     } else {
         http.Error(w, http.StatusText(rpc_response.StatusCode), rpc_response.StatusCode)
     }

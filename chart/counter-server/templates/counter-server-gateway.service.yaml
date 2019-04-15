@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nyt-interview-server
+  name: counter-server-gateway
 spec:
   selector:
-    app: nyt-interview-server
+    app: counter-server-gateway
   ports:
   - protocol: TCP
     port: 80

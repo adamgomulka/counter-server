@@ -21,7 +21,7 @@ func (s *RpcServer) init(c *CounterHandler) {
     fmt.Printf("Intializing RPC Server%s", "\n")
     s.server = rpc.NewServer()
     fmt.Printf("Registering Counter Handler on RPC Server%s", "\n")
-    s.server.Register(c)
+    s.server.RegisterName(service, c)
     fmt.Printf("Opening TCP listener on port 1377%s", "\n")
     s.listener, e = net.Listen("tcp", ":" + strconv.Itoa(1377))
     if e != nil {

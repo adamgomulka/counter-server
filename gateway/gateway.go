@@ -9,64 +9,68 @@ import (
     . "../core"
 )
 
-var services = map[string][]string{"counter": []string{"/hello/", "/counter"}, "health": []string{"/health"}}
-var rpc_port = 1337
+var services = map[string][]string{"CounterHandler": []string{"/hello/", "/counter"}, "health": []string{"/health"}}
+var rpc_port = 1377
 
-type RpcClient struct {
+type RequestHandler struct {
     ServerName string
     client *rpc.Client
 }
 
-type HttpRequestHandler struct {
-    rpc_client RpcClient
-}
-
-func (c *RpcClient) Init() (e error) {
+func (h *RequestHandler) init() (e error) {
     //addr := c.ServerName + ":" + strconv.Itoa(rpc_port)
+    fmt.Printf("Initializing request handler%s", "\n")
     addr := "127.0.0.1:" + strconv.Itoa(rpc_port)
-    c.client, e = rpc.Dial("tcp", addr)
+    h.client, e = rpc.Dial("tcp", addr)
+    fmt.Printf("Request handler initialized: %s%s", h.ServerName, "\n")
+    if e != nil {
+        log.Print(e)
+    } else if e == nil {
+        fmt.Printf("No errors encountered%s", "\n")
+    }
     return
 }
 
-func (c *RpcClient) Close() (e error) {
+
+/*
+func (h *RequestHandler) close() (e error) {
     if c.client != nil {
         e = c.client.Close()
         return
     }
     return
 }
+*/
 
-func (h HttpRequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    rpc_request := RpcRequest{Name: r.URL.Path, Method: r.Method}
-    rpc_response := &RpcResponse{}
-    handler_name := h.rpc_client.ServerName + ".Execute"
-    e := h.rpc_client.client.Call(handler_name, rpc_request, rpc_response)
-    if e != nil {
+func (h RequestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    rpc_request := &RpcRequest{Name: r.URL.Path, Method: r.Method}
+    rpc_response := new(RpcResponse)
+    handler_name := h.ServerName + ".Execute"
+    h.client.Call(handler_name, rpc_request, rpc_response)
+    /* if e != nil {
+        fmt.Printf("Error handling request in ServeHTTP->Call%s", "\n")
         log.Print(e)
     }
     if rpc_response.StatusCode == 200 {
         fmt.Fprintf(w, rpc_response.Message)
     } else {
         http.Error(w, http.StatusText(rpc_response.StatusCode), rpc_response.StatusCode)
-    }
+    }*/
+    fmt.Printf("Status Code: %s%s", strconv.Itoa(rpc_response.StatusCode), "\n")
+    fmt.Printf("Message: %s%s", rpc_response.Message, "\n")
 }
 
-func CreateRPCClients(services map[string][]string) (h map[string]HttpRequestHandler, e []error) {
-    var err error
-    h = make(map[string]HttpRequestHandler)
+func createRPCClients(services map[string][]string) (h map[string]*RequestHandler) {
+    h = make(map[string]*RequestHandler)
     for s, _ := range services {
-        rpc_client := &RpcClient{ServerName: s}
-        err = rpc_client.Init()
-        if err != nil {
-            log.Print(err)
-        }
-        handler := &HttpRequestHandler{rpc_client: *rpc_client}
-        h[s] = *handler
+        handler := &RequestHandler{ServerName: s}
+        handler.init()
+        h[s] = handler
     }
     return
 }
 
-func DefineRoutes(services map[string][]string, handlers map[string]HttpRequestHandler, h *http.ServeMux) {
+func defineRoutes(services map[string][]string, handlers map[string]*RequestHandler, h *http.ServeMux) {
     for s, rs := range services {
         for _, r := range rs {
             h.Handle(r, handlers[s])
@@ -76,7 +80,7 @@ func DefineRoutes(services map[string][]string, handlers map[string]HttpRequestH
 
 func main() {
     http_server := http.NewServeMux()
-    handlers, _ := CreateRPCClients(services)
-    DefineRoutes(services, handlers, http_server)
+    handlers := createRPCClients(services)
+    defineRoutes(services, handlers, http_server)
     log.Fatal(http.ListenAndServe(":8080", http_server))
 }

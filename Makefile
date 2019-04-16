@@ -7,13 +7,14 @@ KUBECONFIG := $(PWD)/.kubeconfig
 
 SHELL := /bin/bash
 
-VERSION := 1.0.0
+VERSION := 1.1.0
 BUILD := `git rev-parse HEAD`
 
 .DEFAULT_GOAL := all
 
 all: get_utils auth build create config_kubernetes deploy
 all_nodl: auth build create config_kubernetes deploy
+destroy: gcp_destroy clean
 
 get_utils:
 	wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-241.0.0-linux-x86_64.tar.gz && tar -xvf google-cloud-sdk-241.0.0-linux-x86_64.tar.gz -C tools/ && rm google-cloud-sdk-241.0.0-linux-x86_64.tar.gz
@@ -41,7 +42,13 @@ config_kubernetes:
 	sleep 30
 
 deploy:
-	helm install --name nyt-interview-server --namespace nyt-interview-server chart/counter-server
+	helm install --name counter-server --namespace counter-server chart/counter-server
+
+undeploy:
+	helm delete --purge counter-server
+
+gcp_destroy:
+	terraform destroy -auto-approve tf/
 
 clean:
 	rm -rf tools/*

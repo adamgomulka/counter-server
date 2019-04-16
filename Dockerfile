@@ -3,6 +3,7 @@ ADD core/core.go /go/src/counter-server/core/core.go
 ADD rpcserv/rpcserv.go /go/src/counter-server/rpcserv/rpcserv.go
 ADD gateway/gateway.go /go/src/counter-server/gateway/gateway.go
 WORKDIR /go/src/counter-server
+RUN go get github.com/go-redis/redis
 RUN go build -o /go/bin/gateway gateway/gateway.go
 RUN go build -o /go/bin/rpcserv rpcserv/rpcserv.go
 

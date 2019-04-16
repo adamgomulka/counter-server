@@ -6,6 +6,9 @@ import (
     "encoding/json"
     "syscall"
     "unsafe"
+    "time"
+
+    "github.com/go-redis/redis"
 )
 
 type RpcRequest struct {
@@ -19,7 +22,7 @@ type RpcResponse struct {
 }
 
 type CounterHandler struct {
-    counts map[string]int
+    redis *redis.Client
 }
 
 type Sysinfo_t struct {
@@ -40,7 +43,8 @@ type Sysinfo_t struct {
 }
 
 func CreateCounterHandler() (h *CounterHandler) {
-    h = &CounterHandler{counts: map[string]int{}}
+    h = &CounterHandler{}
+    h.redis = redis.NewClient(&redis.Options{Addr: "redis:6379", DB: 0})
     return
 }
 
@@ -71,22 +75,30 @@ func (c *CounterHandler) Execute(r RpcRequest, w *RpcResponse) (e error) {
 }
 
 func (c *CounterHandler) resetCounter() RpcResponse {
-    c.counts = make(map[string]int)
+    names := c.redis.Keys("*").Val()
+    for _, n := range names {
+        c.redis.Del(n)
+    }
     return RpcResponse{StatusCode: 200}
 }
 
 func (c *CounterHandler) serveHello(n string) RpcResponse {
-    if _, p := c.counts[n]; p {
-        c.counts[n]++
+    if c.redis.Get(n).Err() != redis.Nil {
+        c.redis.Incr(n)
     } else {
-        c.counts[n] = 1
+        c.redis.Set(n, 1, 5*time.Second)
     }
     m := []byte(fmt.Sprintf("Hello, %s!", n))
     return RpcResponse{Message: m, StatusCode: 200}
 }
 
 func (c *CounterHandler) getCounter() RpcResponse {
-    j, _ := json.Marshal(c.counts)
+    names := c.redis.Keys("*").Val()
+    counts := map[string]int{}
+    for _, n := range names {
+        counts[n] , _ = c.redis.Get(n).Int()
+    }
+    j, _ := json.Marshal(counts)
     return RpcResponse{Message: j, StatusCode: 200}
 }
 

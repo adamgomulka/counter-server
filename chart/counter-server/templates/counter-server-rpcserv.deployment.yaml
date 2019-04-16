@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: counter-server-rpcserv
-        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.1.0
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.0
         ports:
         - containerPort: 1377
         env:

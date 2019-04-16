@@ -10,5 +10,4 @@ FROM debian:stretch-slim
 COPY --from=build /go/bin/gateway /usr/bin/gateway
 COPY --from=build /go/bin/rpcserv /usr/bin/rpcserv
 ADD start-server.sh /usr/local/bin/start-server.sh
-EXPOSE 8080/tcp
 CMD ["/usr/local/bin/start-server.sh"]

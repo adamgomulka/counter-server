@@ -86,7 +86,7 @@ func (c *CounterHandler) serveHello(n string) RpcResponse {
     if c.redis.Get(n).Err() != redis.Nil {
         c.redis.Incr(n)
     } else {
-        c.redis.Set(n, 1)
+        c.redis.Set(n, 1, 0)
     }
     m := []byte(fmt.Sprintf("Hello, %s!", n))
     return RpcResponse{Message: m, StatusCode: 200}

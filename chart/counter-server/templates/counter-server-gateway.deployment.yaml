@@ -14,9 +14,17 @@ spec:
       labels:
         app: counter-server-gateway
     spec:
+      initContainers:
+      - name: wait-for-rpc
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.2
+        env:
+        - name: "WAIT_SERVICE"
+          value: "counter"
+        - name: "WAIT_PORT"
+          value: "1377"
       containers:
       - name: counter-server-gateway
-        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.1
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.2
         ports:
         - containerPort: 8080
         env:

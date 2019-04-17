@@ -1,6 +1,6 @@
 resource "google_container_cluster" "primary" {
   name     = "nyt-interview-server"
-  location = "us-east4-a"
+  location = "us-east4"
 
   # We can't create a cluster with no node pool defined, but we want to only use
   # separately managed node pools. So we create the smallest possible default
@@ -17,12 +17,12 @@ resource "google_container_cluster" "primary" {
 
 resource "google_container_node_pool" "primary_preemptible_nodes" {
   name       = "nyt-server-node-pool"
-  location   = "us-east4-a"
+  location   = "us-east4"
   cluster    = "${google_container_cluster.primary.name}"
   node_count = 1
 
   node_config {
-    preemptible  = true
+    preemptible  = false
     machine_type = "n1-standard-1"
 
     metadata {

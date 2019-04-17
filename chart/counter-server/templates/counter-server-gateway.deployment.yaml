@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: counter-server-gateway
-        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.0
+        image: gcr.io/nyt-adam-gomulka-interview/counter-server:1.2.1
         ports:
         - containerPort: 8080
         env:

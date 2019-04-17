@@ -7,7 +7,7 @@ KUBECONFIG := $(PWD)/.kubeconfig
 
 SHELL := /bin/bash
 
-VERSION := 1.2.0
+VERSION := 1.2.1
 BUILD := `git rev-parse HEAD`
 
 .DEFAULT_GOAL := all

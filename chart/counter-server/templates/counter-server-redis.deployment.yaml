@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter-server-redis
+  labels:
+    app: counter-server-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: counter-server-redis
+  template:
+    metadata:
+      labels:
+        app: counter-server-redis
+    spec:
+      containers:
+      - name: counter-server-redis
+        image: redis
+        ports:
+        - containerPort: 6379
